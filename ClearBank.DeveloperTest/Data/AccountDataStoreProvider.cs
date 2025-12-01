@@ -2,19 +2,19 @@
 
 public class AccountDataStoreProvider : IAccountDataStoreProvider
 {
-    private readonly AccountDataStoreOptions _accountDataStoreOptions;
+    private readonly IAccountDataStore _accountDataStore;
 
     public AccountDataStoreProvider(AccountDataStoreOptions accountDataStoreOptions)
     {
-        _accountDataStoreOptions = accountDataStoreOptions;
+        if (accountDataStoreOptions.DataStoreType == DataStoreType.Backup)
+        {
+            _accountDataStore = new BackupAccountDataStore();
+        }
+
+        _accountDataStore = new AccountDataStore();
     }
     public IAccountDataStore GetAccountDataStore()
     {
-        if (_accountDataStoreOptions.DataStoreType == DataStoreType.Backup)
-        {
-            return new BackupAccountDataStore();
-        }
-
-        return new AccountDataStore();
+        return _accountDataStore;
     }
 }
