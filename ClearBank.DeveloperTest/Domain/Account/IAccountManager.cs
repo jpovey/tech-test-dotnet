@@ -2,5 +2,5 @@
 
 public interface IAccountManager
 {
-    void ApplyPayment(Account account, decimal amount);
+    void DebitAccount(Account account, decimal amount);
 }

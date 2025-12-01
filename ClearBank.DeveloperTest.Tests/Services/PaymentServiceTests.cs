@@ -107,23 +107,23 @@
             }
 
             [Fact]
-            public void DoesApplyPaymentToAccount_GivenValidationSuccess()
+            public void DoesDebitPayment_GivenValidationSuccess()
             {
                 _paymentSchemeStrategy.Validate(_account, _request).Returns(true);
 
                 _sut.MakePayment(_request);
 
-                _accountManager.Received(1).ApplyPayment(_account, _request.Amount);
+                _accountManager.Received(1).DebitAccount(_account, _request.Amount);
             }
 
             [Fact]
-            public void DoesNotApplyPaymentToAccount_GivenValidationSuccess()
+            public void DoesNotDebitPayment_GivenValidationSuccess()
             {
                 _paymentSchemeStrategy.Validate(_account, _request).Returns(false);
 
                 _sut.MakePayment(_request);
 
-                _accountManager.Received(0).ApplyPayment(Arg.Any<Account>(), Arg.Any<decimal>());
+                _accountManager.Received(0).DebitAccount(Arg.Any<Account>(), Arg.Any<decimal>());
             }
         }
     }
