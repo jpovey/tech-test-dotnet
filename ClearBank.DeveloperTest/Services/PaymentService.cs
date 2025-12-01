@@ -6,9 +6,19 @@ namespace ClearBank.DeveloperTest.Services
 {
     public class PaymentService : IPaymentService
     {
+        private readonly IAccountDataStoreProvider _accountDataStoreProvider;
+
+        public PaymentService(IAccountDataStoreProvider accountDataStoreProvider)
+        {
+            _accountDataStoreProvider = accountDataStoreProvider;
+        }
+
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
+            //TODO - use options pattern and move it into the accountDataStoreProvider
             var dataStoreType = ConfigurationManager.AppSettings["DataStoreType"];
+
+            var newAccountDataStore = _accountDataStoreProvider.GetAccountDataStore();
 
             Account account = null;
 
