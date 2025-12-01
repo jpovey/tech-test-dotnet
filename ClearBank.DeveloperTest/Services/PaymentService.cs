@@ -7,20 +7,18 @@ namespace ClearBank.DeveloperTest.Services
 
     public class PaymentService : IPaymentService
     {
-        private readonly IAccountDataStoreProvider _accountDataStoreProvider;
+        private readonly IAccountDataStore _accountDataStore;
         private readonly IPaymentSchemeStrategyFactory _paymentSchemeStrategyFactory;
 
         public PaymentService(IAccountDataStoreProvider accountDataStoreProvider, IPaymentSchemeStrategyFactory paymentSchemeStrategyFactory)
         {
-            _accountDataStoreProvider = accountDataStoreProvider;
+            _accountDataStore = accountDataStoreProvider.ProvideAccountDataStore();
             _paymentSchemeStrategyFactory = paymentSchemeStrategyFactory;
         }
 
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
-            var accountDataStore = _accountDataStoreProvider.ProvideAccountDataStore();
-
-            var account = accountDataStore.GetAccount(request.DebtorAccountNumber);
+            var account = _accountDataStore.GetAccount(request.DebtorAccountNumber);
 
             var paymentSchemeStrategy = _paymentSchemeStrategyFactory.GetPaymentSchemeStrategy(request.PaymentScheme);
             
@@ -32,7 +30,7 @@ namespace ClearBank.DeveloperTest.Services
             if (result.Success)
             {
                 account.Balance -= request.Amount;
-                accountDataStore.UpdateAccount(account);
+                _accountDataStore.UpdateAccount(account);
             }
 
             return result;
