@@ -1,5 +1,6 @@
 ﻿namespace ClearBank.DeveloperTest.Domain.PaymentSchemes.Strategies;
 
+using Account;
 using Types;
 
 public class ChapsPaymentSchemeStrategy : IPaymentSchemeStrategy

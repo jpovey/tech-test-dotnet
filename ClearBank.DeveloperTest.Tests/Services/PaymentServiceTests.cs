@@ -3,6 +3,7 @@
     using AutoFixture;
     using AwesomeAssertions;
     using DeveloperTest.Data;
+    using DeveloperTest.Domain.Account;
     using DeveloperTest.Domain.PaymentSchemes;
     using DeveloperTest.Services;
     using NSubstitute;
@@ -17,14 +18,15 @@
         private readonly IAccountDataStore _accountDataStore;
         private readonly IPaymentSchemeStrategyFactory _paymentSchemeStrategyFactory;
         private readonly IPaymentSchemeStrategy _paymentSchemeStrategy;
+        private readonly IAccountManager _accountManager;
         private readonly PaymentService _sut;
-        private readonly MakePaymentRequest _makePaymentRequest;
+        private readonly MakePaymentRequest _request;
         private readonly Account _account;
         private readonly bool _paymentIsValid;
 
         public PaymentServiceTests()
         {
-            _makePaymentRequest = Fixture.Create<MakePaymentRequest>();
+            _request = Fixture.Create<MakePaymentRequest>();
             _account = Fixture.Create<Account>();
             _paymentIsValid = Fixture.Create<bool>();
 
@@ -32,13 +34,14 @@
             _accountDataStore = Substitute.For<IAccountDataStore>();
             _paymentSchemeStrategyFactory = Substitute.For<IPaymentSchemeStrategyFactory>();
             _paymentSchemeStrategy = Substitute.For<IPaymentSchemeStrategy>();
+            _accountManager = Substitute.For<IAccountManager>();
 
             _accountDataStoreProvider.ProvideAccountDataStore().Returns(_accountDataStore);
-            _accountDataStore.GetAccount(_makePaymentRequest.DebtorAccountNumber).Returns(_account);
-            _paymentSchemeStrategyFactory.GetPaymentSchemeStrategy(_makePaymentRequest.PaymentScheme).Returns(_paymentSchemeStrategy);
-            _paymentSchemeStrategy.Validate(_account, _makePaymentRequest).Returns(_paymentIsValid);
+            _accountDataStore.GetAccount(_request.DebtorAccountNumber).Returns(_account);
+            _paymentSchemeStrategyFactory.GetPaymentSchemeStrategy(_request.PaymentScheme).Returns(_paymentSchemeStrategy);
+            _paymentSchemeStrategy.Validate(_account, _request).Returns(_paymentIsValid);
 
-            _sut = new PaymentService(_accountDataStoreProvider, _paymentSchemeStrategyFactory);
+            _sut = new PaymentService(_accountDataStoreProvider, _paymentSchemeStrategyFactory, _accountManager);
         }
 
         public class MakePayment : PaymentServiceTests
@@ -46,7 +49,7 @@
             [Fact]
             public void SelectsAccountDataStore()
             {
-                _sut.MakePayment(_makePaymentRequest);
+                _sut.MakePayment(_request);
 
                 _accountDataStoreProvider.Received(1).ProvideAccountDataStore();
             }
@@ -54,31 +57,31 @@
             [Fact]
             public void GetsAccountFromAccountDataStore()
             {
-                _sut.MakePayment(_makePaymentRequest);
+                _sut.MakePayment(_request);
 
-                _accountDataStore.Received(1).GetAccount(_makePaymentRequest.DebtorAccountNumber);
+                _accountDataStore.Received(1).GetAccount(_request.DebtorAccountNumber);
             }
 
             [Fact]
             public void GetPaymentSchemeStrategy()
             {
-                _sut.MakePayment(_makePaymentRequest);
+                _sut.MakePayment(_request);
 
-                _paymentSchemeStrategyFactory.Received(1).GetPaymentSchemeStrategy(_makePaymentRequest.PaymentScheme);
+                _paymentSchemeStrategyFactory.Received(1).GetPaymentSchemeStrategy(_request.PaymentScheme);
             }
 
             [Fact]
             public void ValidatePayment()
             {
-                _sut.MakePayment(_makePaymentRequest);
+                _sut.MakePayment(_request);
 
-                _paymentSchemeStrategy.Received(1).Validate(_account, _makePaymentRequest);
+                _paymentSchemeStrategy.Received(1).Validate(_account, _request);
             }
 
             [Fact]
             public void SetsTheSuccessOfMakePaymentResult()
             {
-                var result = _sut.MakePayment(_makePaymentRequest);
+                var result = _sut.MakePayment(_request);
 
                 result.Success.Should().Be(_paymentIsValid);
             }
@@ -86,9 +89,9 @@
             [Fact]
             public void DoesUpdateAccount_GivenValidationSuccess()
             {
-                _paymentSchemeStrategy.Validate(_account, _makePaymentRequest).Returns(true);
+                _paymentSchemeStrategy.Validate(_account, _request).Returns(true);
 
-                _sut.MakePayment(_makePaymentRequest);
+                _sut.MakePayment(_request);
 
                 _accountDataStore.Received(1).UpdateAccount(_account);
             }
@@ -96,11 +99,31 @@
             [Fact]
             public void DoesNotUpdateAccount_GivenValidationFailure()
             {
-                _paymentSchemeStrategy.Validate(_account, _makePaymentRequest).Returns(false);
+                _paymentSchemeStrategy.Validate(_account, _request).Returns(false);
 
-                _sut.MakePayment(_makePaymentRequest);
+                _sut.MakePayment(_request);
 
-                _accountDataStore.Received(0).UpdateAccount(_account);
+                _accountDataStore.Received(0).UpdateAccount(Arg.Any<Account>());
+            }
+
+            [Fact]
+            public void DoesApplyPaymentToAccount_GivenValidationSuccess()
+            {
+                _paymentSchemeStrategy.Validate(_account, _request).Returns(true);
+
+                _sut.MakePayment(_request);
+
+                _accountManager.Received(1).ApplyPayment(_account, _request.Amount);
+            }
+
+            [Fact]
+            public void DoesNotApplyPaymentToAccount_GivenValidationSuccess()
+            {
+                _paymentSchemeStrategy.Validate(_account, _request).Returns(false);
+
+                _sut.MakePayment(_request);
+
+                _accountManager.Received(0).ApplyPayment(Arg.Any<Account>(), Arg.Any<decimal>());
             }
         }
     }

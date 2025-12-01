@@ -1,6 +1,6 @@
 ﻿namespace ClearBank.DeveloperTest.Data;
 
-using Types;
+using Domain.Account;
 
 public interface IAccountDataStore
 {
