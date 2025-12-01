@@ -16,7 +16,7 @@
             [Fact]
             public void GetsAccountDataStore()
             {
-                var result = _sut.GetAccountDataStore();
+                var result = _sut.ProvideAccountDataStore();
 
                 result.Should().BeOfType<AccountDataStore>();
             }
@@ -29,7 +29,7 @@
                     DataStoreType = DataStoreType.Backup
                 });
 
-                var result = _sut.GetAccountDataStore();
+                var result = _sut.ProvideAccountDataStore();
 
                 result.Should().BeOfType<BackupAccountDataStore>();
             }

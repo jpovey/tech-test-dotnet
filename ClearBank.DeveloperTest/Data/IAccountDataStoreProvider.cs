@@ -2,5 +2,5 @@
 
 public interface IAccountDataStoreProvider
 {
-    IAccountDataStore GetAccountDataStore();
+    IAccountDataStore ProvideAccountDataStore();
 }

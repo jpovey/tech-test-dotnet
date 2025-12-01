@@ -9,11 +9,12 @@ public class AccountDataStoreProvider : IAccountDataStoreProvider
         if (accountDataStoreOptions.DataStoreType == DataStoreType.Backup)
         {
             _accountDataStore = new BackupAccountDataStore();
+            return;
         }
 
         _accountDataStore = new AccountDataStore();
     }
-    public IAccountDataStore GetAccountDataStore()
+    public IAccountDataStore ProvideAccountDataStore()
     {
         return _accountDataStore;
     }
