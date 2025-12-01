@@ -3,8 +3,9 @@
     using System;
     using System.Collections.Generic;
     using AwesomeAssertions;
-    using ClearBank.DeveloperTest.Types;
+    using Types;
     using DeveloperTest.Domain.PaymentSchemes;
+    using DeveloperTest.Domain.PaymentSchemes.Strategies;
     using Xunit;
 
     public class PaymentSchemeStrategyFactoryTests

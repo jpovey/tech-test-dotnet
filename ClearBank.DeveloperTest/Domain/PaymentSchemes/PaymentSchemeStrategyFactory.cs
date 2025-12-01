@@ -1,6 +1,7 @@
 ﻿namespace ClearBank.DeveloperTest.Domain.PaymentSchemes;
 
 using System;
+using Strategies;
 using Types;
 
 public class PaymentSchemeStrategyFactory : IPaymentSchemeStrategyFactory
