@@ -7,6 +7,7 @@
     using DeveloperTest.Domain.PaymentSchemes;
     using DeveloperTest.Services;
     using NSubstitute;
+    using NSubstitute.ReturnsExtensions;
     using Types;
     using Xunit;
 
@@ -124,6 +125,16 @@
                 _sut.MakePayment(_request);
 
                 _accountManager.Received(0).DebitAccount(Arg.Any<Account>(), Arg.Any<decimal>());
+            }
+
+            [Fact]
+            public void ReturnFailure_GivenAccountIsNull()
+            {
+                _accountDataStore.GetAccount(_request.DebtorAccountNumber).ReturnsNull();
+
+                var result = _sut.MakePayment(_request);
+
+                result.Success.Should().BeFalse();
             }
         }
     }

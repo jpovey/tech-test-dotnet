@@ -16,6 +16,11 @@ namespace ClearBank.DeveloperTest.Services
         {
             var account = _accountDataStore.GetAccount(request.DebtorAccountNumber);
 
+            if (account is null)
+            {
+                return new MakePaymentResult { Success = false };
+            }
+
             var paymentSchemeStrategy = paymentSchemeStrategyFactory.GetPaymentSchemeStrategy(request.PaymentScheme);
 
             var result = new MakePaymentResult
