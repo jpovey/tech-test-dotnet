@@ -3,8 +3,8 @@
     using AutoFixture;
     using AwesomeAssertions;
     using DeveloperTest.Data;
+    using DeveloperTest.Domain.PaymentSchemes;
     using DeveloperTest.Services;
-    using Domain.PaymentSchemes;
     using NSubstitute;
     using Types;
     using Xunit;
