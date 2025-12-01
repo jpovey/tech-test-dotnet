@@ -82,6 +82,26 @@
 
                 result.Success.Should().Be(_paymentIsValid);
             }
+
+            [Fact]
+            public void DoesUpdateAccount_GivenValidationSuccess()
+            {
+                _paymentSchemeStrategy.Validate(_account, _makePaymentRequest).Returns(true);
+
+                _sut.MakePayment(_makePaymentRequest);
+
+                _accountDataStore.Received(1).UpdateAccount(_account);
+            }
+
+            [Fact]
+            public void DoesNotUpdateAccount_GivenValidationFailure()
+            {
+                _paymentSchemeStrategy.Validate(_account, _makePaymentRequest).Returns(false);
+
+                _sut.MakePayment(_makePaymentRequest);
+
+                _accountDataStore.Received(0).UpdateAccount(_account);
+            }
         }
     }
 }
