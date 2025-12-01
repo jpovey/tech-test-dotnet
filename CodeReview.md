@@ -10,3 +10,7 @@
 - Domain logic is performed within the class mixing concerns with persistance.
 
 - Lack of defensive coding. What if an account is not found? or a transaction fails?
+
+- Settings are not injected
+
+- There are zero tests to start with
