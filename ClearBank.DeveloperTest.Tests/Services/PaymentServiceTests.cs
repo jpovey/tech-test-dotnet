@@ -38,13 +38,13 @@
                 _accountDataStoreProvider.Received(1).GetAccountDataStore();
             }
 
-            //[Fact]
-            //public void GetsAccountFromAccountDataStore()
-            //{
-            //    _sut.MakePayment(_makePaymentRequest);
+            [Fact]
+            public void GetsAccountFromAccountDataStore()
+            {
+                _sut.MakePayment(_makePaymentRequest);
 
-            //    _accountDataStore.Received(1).GetAccount(_makePaymentRequest.DebtorAccountNumber);
-            //}
+                _accountDataStore.Received(1).GetAccount(_makePaymentRequest.DebtorAccountNumber);
+            }
         }
     }
 }
