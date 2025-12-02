@@ -23,18 +23,15 @@ namespace ClearBank.DeveloperTest.Services
 
             var paymentSchemeStrategy = paymentSchemeStrategyFactory.GetPaymentSchemeStrategy(request.PaymentScheme);
 
-            var result = new MakePaymentResult
-            {
-                Success = paymentSchemeStrategy.Validate(account, request)
-            };
+            var isValid = paymentSchemeStrategy.Validate(account, request);
 
-            if (result.Success)
+            if (isValid)
             {
                 accountManager.DebitAccount(account, request.Amount);
                 _accountDataStore.UpdateAccount(account);
             }
 
-            return result;
+            return new MakePaymentResult { Success = isValid };
         }
     }
 }
