@@ -1,93 +1,37 @@
 ﻿using ClearBank.DeveloperTest.Data;
 using ClearBank.DeveloperTest.Types;
-using System.Configuration;
 
 namespace ClearBank.DeveloperTest.Services
 {
-    public class PaymentService : IPaymentService
+    using Domain.Account;
+    using Domain.PaymentSchemes;
+
+    public class PaymentService(IAccountDataStoreProvider accountDataStoreProvider,
+        IPaymentSchemeStrategyFactory paymentSchemeStrategyFactory, 
+        IAccountManager accountManager) : IPaymentService
     {
+        private readonly IAccountDataStore _accountDataStore = accountDataStoreProvider.ProvideAccountDataStore();
+
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
-            var dataStoreType = ConfigurationManager.AppSettings["DataStoreType"];
+            var account = _accountDataStore.GetAccount(request.DebtorAccountNumber);
 
-            Account account = null;
-
-            if (dataStoreType == "Backup")
+            if (account is null)
             {
-                var accountDataStore = new BackupAccountDataStore();
-                account = accountDataStore.GetAccount(request.DebtorAccountNumber);
-            }
-            else
-            {
-                var accountDataStore = new AccountDataStore();
-                account = accountDataStore.GetAccount(request.DebtorAccountNumber);
+                return new MakePaymentResult { Success = false };
             }
 
-            var result = new MakePaymentResult();
+            var paymentSchemeStrategy = paymentSchemeStrategyFactory.GetPaymentSchemeStrategy(request.PaymentScheme);
 
-            result.Success = true;
-            
-            switch (request.PaymentScheme)
+            var isValid = paymentSchemeStrategy.Validate(account, request);
+
+            if (isValid)
             {
-                case PaymentScheme.Bacs:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Bacs))
-                    {
-                        result.Success = false;
-                    }
-                    break;
-
-                case PaymentScheme.FasterPayments:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.FasterPayments))
-                    {
-                        result.Success = false;
-                    }
-                    else if (account.Balance < request.Amount)
-                    {
-                        result.Success = false;
-                    }
-                    break;
-
-                case PaymentScheme.Chaps:
-                    if (account == null)
-                    {
-                        result.Success = false;
-                    }
-                    else if (!account.AllowedPaymentSchemes.HasFlag(AllowedPaymentSchemes.Chaps))
-                    {
-                        result.Success = false;
-                    }
-                    else if (account.Status != AccountStatus.Live)
-                    {
-                        result.Success = false;
-                    }
-                    break;
+                accountManager.DebitAccount(account, request.Amount);
+                _accountDataStore.UpdateAccount(account);
             }
 
-            if (result.Success)
-            {
-                account.Balance -= request.Amount;
-
-                if (dataStoreType == "Backup")
-                {
-                    var accountDataStore = new BackupAccountDataStore();
-                    accountDataStore.UpdateAccount(account);
-                }
-                else
-                {
-                    var accountDataStore = new AccountDataStore();
-                    accountDataStore.UpdateAccount(account);
-                }
-            }
-
-            return result;
+            return new MakePaymentResult { Success = isValid };
         }
     }
 }

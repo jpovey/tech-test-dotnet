@@ -1,5 +1,7 @@
-﻿namespace ClearBank.DeveloperTest.Types
+﻿namespace ClearBank.DeveloperTest.Domain.Account
 {
+    using Types;
+
     public class Account
     {
         public string AccountNumber { get; set; }
