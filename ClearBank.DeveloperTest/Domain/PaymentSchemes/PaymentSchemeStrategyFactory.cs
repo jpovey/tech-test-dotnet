@@ -1,19 +1,20 @@
 ﻿namespace ClearBank.DeveloperTest.Domain.PaymentSchemes;
 
-using System;
 using Strategies;
+using System.Collections.Generic;
 using Types;
 
 public class PaymentSchemeStrategyFactory : IPaymentSchemeStrategyFactory
 {
-    public IPaymentSchemeStrategy GetPaymentSchemeStrategy(PaymentScheme paymentScheme)
+    private readonly IReadOnlyDictionary<PaymentScheme, IPaymentSchemeStrategy> _strategies = new Dictionary<PaymentScheme, IPaymentSchemeStrategy>
     {
-        return paymentScheme switch
-        {
-            PaymentScheme.Bacs => new BacsPaymentSchemeStrategy(),
-            PaymentScheme.FasterPayments => new FasterPaymentsSchemeStrategy(),
-            PaymentScheme.Chaps => new ChapsPaymentSchemeStrategy(),
-            _ => throw new ArgumentOutOfRangeException(nameof(paymentScheme))
-        };
+        { PaymentScheme.Bacs, new BacsPaymentSchemeStrategy() },
+        { PaymentScheme.FasterPayments, new FasterPaymentsSchemeStrategy() },
+        { PaymentScheme.Chaps, new ChapsPaymentSchemeStrategy() }
+    };
+
+    public IPaymentSchemeStrategy GetPaymentSchemeStrategy(PaymentScheme scheme)
+    {
+        return _strategies[scheme];
     }
 }

@@ -9,7 +9,7 @@ Introduced the Options pattern to select the `DataStoreType` instead of reading 
 This reduces repeated I/O access which can be expensive when repeated.
 
 ### AccountDataStore
-Introduce `AccountDataStoreProvider` to select the appropriate `IAccountDataStore` based on the `DataStoreType` selected from the options. If this was production code this could use traditonal DI to select the data store on startup. Note: This is intentionally called a provider rather than a factory because it returns a pre-constructed instance rather than creating new instances each time.
+Introduce `AccountDataStoreProvider` to select the appropriate `IAccountDataStore` based on the `DataStoreType` selected from the options. If this was production code this would use traditonal DI to select the data store on startup. This is intentionally named a provider rather than a factory because it supplies a resolved instance rather than constructing a new one on each request modelling the DI behaviour.
 
 ### AccountManager
 Extracted account-related domain logic (e.g. debiting an account) into a dedicated AccountManager.
@@ -17,6 +17,7 @@ This isolates domain behaviour from orchestration logic and improves testability
 
 ### PaymentSchemeStrategy
 Abstract the payment scheme strategies out of the switch statement and use the `IPaymentSchemeStrategyFactory` to select the appropriate implementation at runtime. This fixes the issue with the open closed principal. Each scheme’s business rules now live in an isolated, testable class.
+Implemented with a cache to optimise performance as all the concrete versions are stateless singletons.
 Note: I have not implemented the busines logic tests for each strategy due to time constraints
 
 ### PaymentService
